@@ -7,6 +7,8 @@ import { type Category } from '@/types/Category';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { updateTransaction } from './actions';
+import { format } from 'date-fns';
 
 export default function EditTransactionForm({
   categories,
@@ -24,15 +26,22 @@ export default function EditTransactionForm({
   const router = useRouter();
 
   const handleSubmit = async (data: z.infer<typeof transactionFormSchema>) => {
-    const result = {};
+    const result = await updateTransaction({
+      id: transaction.id,
+      categoryId: data.categoryId,
+      amount: data.amount,
+      description: data.description,
+      transactionDate: format(data.transactionDate, 'yyyy-MM-dd'),
+    });
 
-    if ('error' in result) {
+    if (result && 'error' in result) {
       toast.error(result.message);
+      console.log('edf result ==>', result);
+      return;
     }
 
-    if ('id' in result) {
-      toast.success(`transaction Updated successfuly`);
-    }
+    console.log('edf success result ==>', result);
+    toast.success(`transaction Updated successfuly`);
 
     router.push(
       `/dashboard/transactions?month=${data.transactionDate.getMonth() + 1}&year=${data.transactionDate.getFullYear()}`
