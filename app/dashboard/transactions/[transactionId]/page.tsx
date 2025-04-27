@@ -9,6 +9,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import React from 'react';
+import EditTransactionForm from './edit-transaction-form';
+import { getCategories } from '@/data/getCategories';
+import { getTransaction } from '@/data/getTransaction';
+import { notFound } from 'next/navigation';
 
 export default async function EditTransactionPage({
   params,
@@ -18,7 +22,12 @@ export default async function EditTransactionPage({
   const paramsValues = await params;
 
   const transactionId = Number(paramsValues.transactionId);
-  if (isNaN(transactionId)) return <div>oops! transactino not found!</div>;
+  if (isNaN(transactionId)) return notFound();
+
+  const categories = await getCategories();
+  const transaction = await getTransaction(transactionId);
+
+  if (!transaction) return notFound();
 
   return (
     <div className="max-w-screen-xl mx-auto py-10">
@@ -46,7 +55,12 @@ export default async function EditTransactionPage({
         <CardHeader>
           <CardTitle>Edit Transaction</CardTitle>
         </CardHeader>
-        <CardContent>edit transaction</CardContent>
+        <CardContent>
+          <EditTransactionForm
+            categories={categories}
+            transaction={transaction}
+          />
+        </CardContent>
       </Card>
     </div>
   );
