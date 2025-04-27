@@ -12,7 +12,6 @@ export async function getTransactionsByMonth({
   month: number;
   year: number;
 }) {
-  console.log('trying to get transactions');
   const { userId } = await auth();
   if (!userId) return null;
 

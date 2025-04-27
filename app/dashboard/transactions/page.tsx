@@ -55,8 +55,6 @@ export default async function TransactionsPage({
 
   const yearsRange = await getTransactionsYearsRange();
 
-  console.log(transactions);
-
   return (
     <div className="max-w-screen-xl mx-auto py-10">
       <Breadcrumb>

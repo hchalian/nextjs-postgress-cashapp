@@ -1,14 +1,10 @@
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import Link from 'next/link';
 import React from 'react';
+import EditTransactionForm from './edit-transaction-form';
+import { getCategories } from '@/data/getCategories';
+import { getTransaction } from '@/data/getTransaction';
+import { notFound } from 'next/navigation';
+import DeleteTransactionDialog from './delete-transaction-dailog';
 
 export default async function EditTransactionPage({
   params,
@@ -18,36 +14,30 @@ export default async function EditTransactionPage({
   const paramsValues = await params;
 
   const transactionId = Number(paramsValues.transactionId);
-  if (isNaN(transactionId)) return <div>oops! transactino not found!</div>;
+  if (isNaN(transactionId)) return notFound();
+
+  const categories = await getCategories();
+  const transaction = await getTransaction(transactionId);
+
+  if (!transaction) return notFound();
 
   return (
-    <div className="max-w-screen-xl mx-auto py-10">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link href="/dashboard">DashBoard</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link href="/dashboard/transactions">Transactions</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Edit Transaction</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
-      <Card className="mt-4 max-w-screen-md">
-        <CardHeader>
-          <CardTitle>Edit Transaction</CardTitle>
-        </CardHeader>
-        <CardContent>edit transaction</CardContent>
-      </Card>
-    </div>
+    <Card className="mt-4 max-w-screen-md">
+      <CardHeader>
+        <CardTitle className="flex justify-between">
+          <span>Edit Transaction</span>
+          <DeleteTransactionDialog
+            transactionId={transactionId}
+            transactionDate={transaction.transactionDate}
+          />
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <EditTransactionForm
+          categories={categories}
+          transaction={transaction}
+        />
+      </CardContent>
+    </Card>
   );
 }
