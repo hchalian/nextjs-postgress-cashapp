@@ -1,25 +1,26 @@
-'use client'
+'use client';
 
-import { useForm } from 'react-hook-form'
-import { addDays, format } from 'date-fns'
-import { z } from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Form, FormField, FormItem, FormLabel, FormMessage } from './ui/form'
+import { useForm } from 'react-hook-form';
+import { addDays, format } from 'date-fns';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Form, FormField, FormItem, FormLabel, FormMessage } from './ui/form';
 import {
   Select,
   SelectTrigger,
   SelectValue,
   SelectContent,
   SelectItem,
-} from './ui/select'
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
-import { Button } from './ui/button'
-import { cn } from '@/lib/utils'
-import { CalendarIcon } from 'lucide-react'
-import { Calendar } from './ui/calendar'
-import { Input } from './ui/input'
+} from './ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { Button } from './ui/button';
+import { cn } from '@/lib/utils';
+import { CalendarIcon } from 'lucide-react';
+import { Calendar } from './ui/calendar';
+import { Input } from './ui/input';
+import { type Category } from '@/types/Category';
 
-const transactionFormSchema = z.object({
+export const transactionFormSchema = z.object({
   transactionType: z.enum(['income', 'expense']),
   categoryId: z.coerce.number().positive('Please select a category'),
   transactionDate: z.coerce
@@ -30,9 +31,14 @@ const transactionFormSchema = z.object({
     .string()
     .min(3, 'Description must contain at least 3 characters')
     .max(300, 'Description must contain a maximum of 300 characters'),
-})
+});
 
-export default function TransactionForm() {
+type Props = {
+  categories: Category[];
+  onSubmit: (data: z.infer<typeof transactionFormSchema>) => Promise<void>;
+};
+
+export default function TransactionForm({ categories, onSubmit }: Props) {
   const form = useForm<z.infer<typeof transactionFormSchema>>({
     resolver: zodResolver(transactionFormSchema),
     defaultValues: {
@@ -42,16 +48,20 @@ export default function TransactionForm() {
       transactionDate: new Date(),
       transactionType: 'income',
     },
-  })
+  });
 
-  const handleSubmit = async (data: z.infer<typeof transactionFormSchema>) => {
-    console.log(data)
-  }
+  const transactionType = form.watch('transactionType');
+  const filteredCategories = categories.filter(
+    (cat) => cat.type === transactionType
+  );
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)}>
-        <fieldset className="grid grid-cols-2 gap-y-5 gap-x-2">
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <fieldset
+          disabled={form.formState.isSubmitting}
+          className="grid grid-cols-2 gap-y-5 gap-x-2"
+        >
           <FormField
             control={form.control}
             name="transactionType"
@@ -59,7 +69,10 @@ export default function TransactionForm() {
               <FormItem>
                 <FormLabel>Transactoin Type</FormLabel>
                 <Select
-                  onValueChange={field.onChange}
+                  onValueChange={(newValue) => {
+                    field.onChange(newValue);
+                    form.setValue('categoryId', 0);
+                  }}
                   defaultValue={field.value}
                   value={field.value}
                 >
@@ -81,7 +94,7 @@ export default function TransactionForm() {
             name="categoryId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Category Id</FormLabel>
+                <FormLabel>Category</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value.toString()}
@@ -91,8 +104,11 @@ export default function TransactionForm() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="income">Income</SelectItem>
-                    <SelectItem value="expense">Expense</SelectItem>
+                    {filteredCategories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id.toString()}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -153,7 +169,10 @@ export default function TransactionForm() {
           />
         </fieldset>
 
-        <fieldset className="mt-5 flex flex-col gap-5">
+        <fieldset
+          disabled={form.formState.isSubmitting}
+          className="mt-5 flex flex-col gap-5"
+        >
           <FormField
             control={form.control}
             name="description"
@@ -170,5 +189,5 @@ export default function TransactionForm() {
         </fieldset>
       </form>
     </Form>
-  )
+  );
 }
