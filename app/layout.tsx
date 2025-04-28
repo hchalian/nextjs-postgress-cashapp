@@ -37,11 +37,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <body
-          className={`${fraunces.variable} ${gabriela.variable} antialiased`}
-        >
+    <html lang="en">
+      <body className={`${fraunces.variable} ${gabriela.variable} antialiased`}>
+        <ClerkProvider>
           <nav className="bg-primary p-4 text-white h-20 flex items-center justify-between">
             <Link
               href={'/'}
@@ -67,8 +65,8 @@ export default function RootLayout({
           </nav>
           {children}
           <Toaster richColors />
-        </body>
-      </html>
-    </ClerkProvider>
+        </ClerkProvider>
+      </body>
+    </html>
   );
 }
